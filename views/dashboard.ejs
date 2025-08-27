@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 220px;
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar h2 {
+            margin: 0 0 20px;
+            font-size: 22px;
+            text-align: center;
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+            display: block;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background: #34495e;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 240px;
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        header {
+            margin-bottom: 20px;
+        }
+
+        /* Add Book */
+        #add-book {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        #add-book input,
+        #add-book button {
+            margin: 5px 0;
+            padding: 8px;
+        }
+
+        /* Search Bar */
+        .search-bar {
+            margin-bottom: 20px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        /* Books Grid */
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .book-card {
+            background-size: cover;
+            background-position: center;
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            height: 250px;
+            position: relative;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .book-info {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .book-info h3 {
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+            position: relative;
+            text-align: center;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 22px;
+            cursor: pointer;
+        }
+
+        .modal img {
+            width: 100%;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        /* Borrow Buttons per role */
+        .borrow-btn {
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.3s;
+            width: 100%;
+            color: white;
+        }
+
+        .student-btn {
+            background: #3498db;
+        }
+
+        .student-btn:hover {
+            background: #2980b9;
+            transform: scale(1.05);
+        }
+
+        .teacher-btn {
+            background: #27ae60;
+        }
+
+        .teacher-btn:hover {
+            background: #1e8449;
+            transform: scale(1.05);
+        }
+
+        .librarian-btn {
+            background: #e67e22;
+        }
+
+        .librarian-btn:hover {
+            background: #ca6f1e;
+            transform: scale(1.05);
+        }
+
+        /* Borrowed Books Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+
+        th {
+            background: #34495e;
+            color: white;
+        }
+
+        button {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <h2>📚 Library</h2>
+        <a href="/dashboard">Dashboard</a>
+        <% if(user.role==='librarian' ){ %>
+            <a href="/logs">Borrow Logs</a>
+            <a href="/users">Users</a>
+            <% } else { %>
+                <a href="/my-books">My Borrowed Books</a>
+                <% } %>
+                    <a href="/logout">Logout</a>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <header>
+            <h1>Welcome, <%= user.username %> (<%= user.role %>)</h1>
+        </header>
+
+        <!-- Add Book -->
+        <% if(user.role==='librarian' ){ %>
+            <section id="add-book">
+                <h2>Add Book</h2>
+                <form action="/add-book" method="POST" enctype="multipart/form-data">
+                    <input type="text" name="title" placeholder="Title" required>
+                    <input type="text" name="author" placeholder="Author" required>
+                    <input type="file" name="image" accept="image/*">
+                    <button type="submit">Add Book</button>
+                </form>
+            </section>
+            <% } %>
+
+                <!-- Search Bar -->
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Search books...">
+                </div>
+
+                <!-- Books Grid -->
+                <section class="books-grid" id="booksGrid">
+                    <% books.forEach(book=> { %>
+                        <div class="book-card"
+                            style="background-image: url('<%= book.image ? '/images/' + book.image : '/images/book_placeholder.jpg' %>');"
+                            data-title="<%= book.title %>" data-author="<%= book.author %>" data-id="<%= book.id %>">
+                            <div class="book-info">
+                                <h3>
+                                    <%= book.title %>
+                                </h3>
+                            </div>
+                        </div>
+                        <% }) %>
+                </section>
+
+                <!-- Borrowed Books (Librarian only) -->
+                <% if(user.role==='librarian' ){ %>
+                    <section id="borrowed-books">
+                        <h2>Borrowed Books</h2>
+                        <% if(borrowedBooks.length===0){ %>
+                            <p>No books are currently borrowed.</p>
+                            <% } else { %>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Book Title</th>
+                                            <th>User</th>
+                                            <th>Borrow Date</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% borrowedBooks.forEach(log=> { %>
+                                            <tr>
+                                                <td>
+                                                    <%= log.id %>
+                                                </td>
+                                                <td>
+                                                    <%= log.book_title %>
+                                                </td>
+                                                <td>
+                                                    <%= log.username %>
+                                                </td>
+                                                <td>
+                                                    <%= log.borrow_date %>
+                                                </td>
+                                                <td>
+                                                    <form action="/return-book" method="POST">
+                                                        <input type="hidden" name="book_id" value="<%= log.book_id %>">
+                                                        <button type="submit">Mark as Returned</button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                            <% }) %>
+                                    </tbody>
+                                </table>
+                                <% } %>
+                    </section>
+                    <% } %>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="bookModal">
+            <span class="modal-close" id="modalClose">&times;</span>
+            <img id="modalImage" src="" alt="Book Image">
+            <h3 id="modalTitle"></h3>
+            <p id="modalAuthor"></p>
+            <form action="/borrow-book" method="POST" id="borrowForm">
+                <input type="hidden" name="book_id" id="modalBookId">
+                <button type="submit" class="borrow-btn 
+                    <% if(user.role==='student'){ %>student-btn<% } %>
+                    <% if(user.role==='teacher'){ %>teacher-btn<% } %>
+                    <% if(user.role==='librarian'){ %>librarian-btn<% } %>">
+                    📖 Borrow Book
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        const searchInput = document.getElementById("searchInput");
+        const booksGrid = document.getElementById("booksGrid").children;
+        searchInput.addEventListener("keyup", function () {
+            const filter = searchInput.value.toLowerCase();
+            for (let book of booksGrid) {
+                let title = book.getAttribute("data-title").toLowerCase();
+                book.style.display = title.includes(filter) ? "" : "none";
+            }
+        });
+
+        const modalOverlay = document.getElementById("modalOverlay");
+        const modalClose = document.getElementById("modalClose");
+        const modalTitle = document.getElementById("modalTitle");
+        const modalAuthor = document.getElementById("modalAuthor");
+        const modalBookId = document.getElementById("modalBookId");
+        const modalImage = document.getElementById("modalImage");
+
+        for (let book of booksGrid) {
+            book.addEventListener("click", function () {
+                modalTitle.textContent = this.getAttribute("data-title");
+                modalAuthor.textContent = "Author: " + this.getAttribute("data-author");
+                modalBookId.value = this.getAttribute("data-id");
+
+                const bg = this.style.backgroundImage;
+                modalImage.src = bg.slice(5, -2);
+
+                modalOverlay.style.display = "flex";
+            });
+        }
+
+        modalClose.addEventListener("click", function () {
+            modalOverlay.style.display = "none";
+        });
+
+        modalOverlay.addEventListener("click", function (e) {
+            if (e.target === modalOverlay) modalOverlay.style.display = "none";
+        });
+    </script>
+</body>
+
+</html>

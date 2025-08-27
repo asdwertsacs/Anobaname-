@@ -1,0 +1,23 @@
+{
+    "name": "library-system",
+    "version": "1.0.0",
+    "description": "Simple library system with Node.js, Express, EJS, and SQLite",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js"
+    },
+    "dependencies": {
+        "ejs": "^3.1.10",
+        "express": "^4.21.2",
+        "express-session": "^1.17.3",
+        "multer": "^1.4.5-lts.1",
+        "sqlite3": "^5.1.7"
+    },
+    "engines": {
+        "node": "18.x"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "type": "commonjs"
+}
