@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const session = require("express-session");
 const multer = require("multer");
@@ -5,14 +6,14 @@ const path = require("path");
 const sqlite3 = require("sqlite3").verbose();
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 app.use(
     session({
-        secret: "librarysecret",
+        secret: process.env.SESSION_SECRET || "librarysecret",
         resave: false,
         saveUninitialized: true,
     })
@@ -21,7 +22,7 @@ app.set("view engine", "ejs");
 
 // Database with FULLMUTEX (avoids SQLITE_BUSY)
 const db = new sqlite3.Database(
-    "./library.db",
+    process.env.DB_PATH || "./library.db",
     sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE | sqlite3.OPEN_FULLMUTEX,
     (err) => {
         if (err) console.error("❌ DB connection error:", err);
